@@ -1,6 +1,6 @@
 {
   "name": "vitest-drizzle",
-  "version": "1",
+  "version": "0.0.1",
   "description": "Fast database testing for Vitest with Drizzle ORM using savepoints and schema caching",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

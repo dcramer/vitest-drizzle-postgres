@@ -24,7 +24,7 @@
     "lint:fix": "turbo lint:fix",
     "format": "turbo format",
     "version": "turbo version",
-    "publish": "turbo publish",
+    "publish": "turbo publish --filter=vitest-drizzle",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
@@ -41,6 +41,10 @@
   ],
   "author": "David Cramer <dcramer@gmail.com> (https://github.com/dcramer)",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@changesets/cli": "^2.29.4",

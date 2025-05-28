@@ -41,12 +41,13 @@
       "persistent": true
     },
     "version": {
-      "dependsOn": ["build", "test", "lint"],
+      "dependsOn": ["build", "lint"],
       "cache": false
     },
     "publish": {
-      "dependsOn": ["version"],
-      "cache": false
+      "dependsOn": ["version", "vitest-drizzle-tests#test"],
+      "cache": false,
+      "outputLogs": "new-only"
     }
   }
 }
