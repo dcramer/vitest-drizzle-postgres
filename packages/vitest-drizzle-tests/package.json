@@ -1,0 +1,20 @@
+{
+  "name": "vitest-drizzle-tests",
+  "version": "0.0.0",
+  "description": "Tests for vitest-drizzle package",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "clean": "echo 'No build artifacts to clean'",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "dependencies": {
+    "vitest-drizzle": "workspace:*"
+  }
+}

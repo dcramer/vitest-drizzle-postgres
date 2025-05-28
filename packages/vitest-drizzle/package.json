@@ -1,0 +1,52 @@
+{
+  "name": "vitest-drizzle",
+  "version": "1",
+  "description": "Fast database testing for Vitest with Drizzle ORM using savepoints and schema caching",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./types": {
+      "types": "./src/types.d.ts"
+    }
+  },
+  "files": ["dist", "src/types.d.ts"],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "clean": "rm -rf dist",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "prepublishOnly": "pnpm build",
+    "version": "echo 'Version updated'",
+    "publish": "npm publish"
+  },
+  "keywords": [
+    "vitest",
+    "drizzle",
+    "database",
+    "testing",
+    "postgresql",
+    "savepoint",
+    "transaction"
+  ],
+  "author": "David Cramer <dcramer@gmail.com> (https://github.com/dcramer)",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "drizzle-orm": ">=0.30.0",
+    "pg": ">=8.0.0",
+    "vitest": ">=1.0.0"
+  }
+}

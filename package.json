@@ -1,0 +1,64 @@
+{
+  "name": "vitest-drizzle-monorepo",
+  "version": "0.0.0",
+  "description": "Fast database testing for Vitest with Drizzle ORM using savepoints and schema caching",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "scripts": {
+    "build": "turbo build",
+    "test": "turbo test",
+    "test:watch": "turbo test:watch",
+    "test:all": "turbo build test",
+    "dev": "turbo dev",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
+    "db:restart": "docker-compose restart",
+    "db:logs": "docker-compose logs -f postgres",
+    "db:reset": "docker-compose down -v && docker-compose up -d",
+    "test:with-db": "pnpm db:start && sleep 5 && turbo test",
+    "db:generate": "turbo db:generate",
+    "db:migrate": "turbo db:migrate",
+    "db:studio": "turbo db:studio",
+    "clean": "turbo clean",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "format": "turbo format",
+    "version": "turbo version",
+    "publish": "turbo publish",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
+    "prepare": "simple-git-hooks"
+  },
+  "keywords": [
+    "vitest",
+    "drizzle",
+    "database",
+    "testing",
+    "postgresql",
+    "savepoint",
+    "transaction"
+  ],
+  "author": "David Cramer <dcramer@gmail.com> (https://github.com/dcramer)",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.29.4",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.24.0",
+    "drizzle-orm": "^0.33.0",
+    "lint-staged": "^15.2.10",
+    "pg": "^8.12.0",
+    "simple-git-hooks": "^2.11.1",
+    "tsdown": "^0.12.4",
+    "turbo": "^2.5.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts,json,md}": ["biome check --write"]
+  }
+}
