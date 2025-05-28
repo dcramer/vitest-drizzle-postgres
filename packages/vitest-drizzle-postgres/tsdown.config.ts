@@ -3,6 +3,7 @@ import { defineConfig } from "tsdown";
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["cjs", "esm"],
+  onSuccess: "cp src/types.d.ts dist/types.d.ts",
   dts: true,
   clean: true,
   external: [

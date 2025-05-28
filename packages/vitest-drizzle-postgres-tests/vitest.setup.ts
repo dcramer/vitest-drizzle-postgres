@@ -1,5 +1,3 @@
-/// <reference types="vitest/globals" />
-
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -49,9 +47,13 @@ const testPool = new Pool({
     process.env.TEST_DATABASE_URL ||
     "postgresql://postgres:postgres@localhost:5432/test_vitest_drizzle",
 });
-const testDb = drizzle(testPool);
 
-// Setup test database using our connection
+// You can create either a schema-typed connection (recommended for type safety)
+// or an untyped connection (for flexibility) - both work with setupTestDb
+const testDb = drizzle(testPool, { schema }); // Typed
+// const testDb = drizzle(testPool); // Untyped
+
+// Setup test database
 await setupTestDb({
   schema,
   db: testDb,

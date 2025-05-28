@@ -12,7 +12,7 @@ npm install vitest-drizzle-postgres
 // vitest.setup.ts
 /// <reference types="vitest-drizzle-postgres/types" />
 
-import { setupTestDb, useTestDb, cleanupTestDb } from 'vitest-drizzle-postgres';
+import { setupTestDb, useTestDb, cleanupTestDb, teardownTestDb } from 'vitest-drizzle-postgres';
 import { beforeAll, beforeEach, afterEach } from 'vitest';
 
 import { db } from './src/db'; // Your existing database connection
@@ -24,15 +24,18 @@ beforeAll(async () => {
     db,
     migrationsFolder: "./migrations", // optional
   });
-});
 
+  return async () => {
+    await teardownTestDb();
+  }
+});
 
 beforeEach(async (ctx) => {
   await useTestDb(ctx);
-});
 
-afterEach(async () => {
-  await cleanupTestDb();
+  return async () => {
+    await cleanupTestDb();
+  };
 });
 ```
 

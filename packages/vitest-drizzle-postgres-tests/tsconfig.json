@@ -9,7 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["vitest/globals", "vitest-drizzle-postgres/globals"]
+    "types": ["vitest/globals", "vitest-drizzle-postgres/types"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]

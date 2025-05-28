@@ -1,6 +1,5 @@
-import "vitest";
 import { TestContext } from "vitest";
-import type { TestDbContext } from "vitest-drizzle-postgres";
+import type { TestDbContext } from "./index";
 
 declare module "vitest" {
   interface TestContext {
