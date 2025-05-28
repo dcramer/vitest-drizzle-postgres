@@ -1,25 +1,31 @@
-# vitest-drizzle
+# vitest-drizzle-postgres
 
-An adapter to make Drizzle work with Vitest.
-
-**Currently supports PostgreSQL only.**
+Vitest + Drizzle.
 
 ## Quick Start
 
 ```bash
-npm install vitest-drizzle
+npm install vitest-drizzle-postgres
 ```
 
 ```typescript
 // vitest.setup.ts
-import { beforeEach, afterEach } from 'vitest';
-import { setupTestDb, useTestDb, cleanupTestDb } from 'vitest-drizzle';
-import * as schema from './schema';
+/// <reference types="vitest-drizzle-postgres/types" />
 
-await setupTestDb({
-  schema,
-  url: 'postgresql://postgres:postgres@localhost:5432/test_db',
+import { setupTestDb, useTestDb, cleanupTestDb } from 'vitest-drizzle-postgres';
+import { beforeAll, beforeEach, afterEach } from 'vitest';
+
+import { db } from './src/db'; // Your existing database connection
+import * as schema from './src/schema';
+
+beforeAll(async () => {
+  await setupTestDb({
+    schema,
+    db,
+    migrationsFolder: "./migrations", // optional
+  });
 });
+
 
 beforeEach(async (ctx) => {
   await useTestDb(ctx);
@@ -31,34 +37,51 @@ afterEach(async () => {
 ```
 
 ```typescript
-// your.test.ts
-test('database operations', async (ctx) => {
-  const db = ctx.$db.client;
-  
-  const [user] = await db.insert(users).values({
-    name: 'John',
-    email: 'john@example.com'
-  }).returning();
-  
-  expect(user.name).toBe('John');
-  // Data automatically cleaned up after test
+// user.test.ts
+import { describe, test, expect } from 'vitest';
+import { users } from './schema';
+
+import { db } from './src/db'; // Your existing database connection
+
+describe('User tests', () => {
+  test('should create and find user', async () => {
+    const [user] = await db
+      .insert(users)
+      .values({ name: 'John', email: 'john@example.com' })
+      .returning();
+
+    expect(user.name).toBe('John');
+    
+    const foundUsers = await db.select().from(users);
+    expect(foundUsers).toHaveLength(1);
+  });
+
+  test('should not see data from previous test', async () => {
+    const users = await db.select().from(users);
+    expect(users).toHaveLength(0); // Clean slate
+  });
 });
 ```
 
 ## Features
 
-- Automatic schema caching - reuses test database when schema unchanged
-- Savepoint mode (default) - instant rollbacks using PostgreSQL savepoints
-- Truncate mode - full table cleanup for complex scenarios
-- Zero configuration - works with existing Drizzle setup
-- Type-safe test context
+- Uses PostgreSQL savepoints for fast test isolation
+- Schema change detection and caching
+- Works with your existing Drizzle database connection
+- Supports both savepoint and truncate modes
+- Minimal setup required
+
+## Packages
+
+- `packages/vitest-drizzle-postgres` - Core library
+- `packages/vitest-drizzle-postgres-tests` - Test suite
 
 ## Development
 
 This is a pnpm monorepo with Turborepo for build orchestration:
 
-- `packages/vitest-drizzle` - Core library
-- `packages/vitest-drizzle-tests` - Test suite
+- `packages/vitest-drizzle-postgres` - Core library
+- `packages/vitest-drizzle-postgres-tests` - Test suite
 
 ```bash
 pnpm install

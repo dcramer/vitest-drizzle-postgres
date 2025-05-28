@@ -1,4 +1,3 @@
-// drizzle-vitest.d.ts
 import { TestContext } from "vitest";
 import type { TestDbContext } from "./index";
 

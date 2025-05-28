@@ -1,6 +1,6 @@
-# vitest-drizzle-tests
+# vitest-drizzle-postgres-tests
 
-Test suite for the vitest-drizzle package.
+Test suite for the vitest-drizzle-postgres package.
 
 ## Running Tests
 

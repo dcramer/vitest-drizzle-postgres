@@ -2,14 +2,13 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool, type PoolClient } from "pg";
+import type { drizzle } from "drizzle-orm/node-postgres";
 import type { TestContext } from "vitest";
 
 // Types and Interfaces
 export interface SetupTestDbOptions {
   schema: Record<string, any>;
-  url: string;
+  db: ReturnType<typeof drizzle>;
   migrationsFolder?: string;
 }
 
@@ -72,7 +71,6 @@ class GlobalState {
   private static instance: GlobalState;
 
   public db: ReturnType<typeof drizzle> | null = null;
-  public pool: Pool | null = null;
   public schemaHash: string | null = null;
   public tableNames: string[] = [];
 
@@ -89,10 +87,6 @@ class GlobalState {
   }
 
   async teardown(): Promise<void> {
-    if (this.pool) {
-      await this.pool.end();
-      this.pool = null;
-    }
     this.db = null;
     this.reset();
   }
@@ -102,7 +96,6 @@ class GlobalState {
 class TestState {
   private static instance: TestState;
 
-  public client: PoolClient | null = null;
   public db: ReturnType<typeof drizzle> | null = null;
   public mode: TestMode = "savepoint";
 
@@ -114,7 +107,6 @@ class TestState {
   }
 
   reset(): void {
-    this.client = null;
     this.db = null;
     this.mode = "savepoint";
   }
@@ -206,15 +198,15 @@ class DatabaseUtils {
     await db.execute(sql.raw(`DROP TABLE IF EXISTS ${quotedTables} CASCADE`));
   }
 
-  static async truncateTables(
-    client: PoolClient,
+  static async truncateTablesWithDb(
+    db: ReturnType<typeof drizzle>,
     tableNames: string[]
   ): Promise<void> {
     if (tableNames.length === 0) return;
 
     const quotedTables = tableNames.map((t) => `"${t}"`).join(", ");
-    await client.query(
-      `TRUNCATE TABLE ${quotedTables} RESTART IDENTITY CASCADE`
+    await db.execute(
+      sql.raw(`TRUNCATE TABLE ${quotedTables} RESTART IDENTITY CASCADE`)
     );
   }
 }
@@ -233,12 +225,12 @@ class MigrationUtils {
         .sort();
 
       if (migrationFiles.length === 0) {
-        console.log("vitest-drizzle: No migrations found");
+        console.log("vitest-drizzle-postgres: No migrations found");
         return;
       }
 
       console.log(
-        `vitest-drizzle: Running ${migrationFiles.length} migration(s)`
+        `vitest-drizzle-postgres: Running ${migrationFiles.length} migration(s)`
       );
 
       for (const file of migrationFiles) {
@@ -285,7 +277,7 @@ class MigrationUtils {
 async function createFreshDb(options: SetupTestDbOptions): Promise<void> {
   const globalState = GlobalState.getInstance();
 
-  if (!globalState.pool || !globalState.db) {
+  if (!globalState.db) {
     throw new VitestDrizzleError("Database connection not initialized");
   }
 
@@ -316,10 +308,9 @@ export async function setupTestDb(options: SetupTestDbOptions): Promise<void> {
   const globalState = GlobalState.getInstance();
   const newSchemaHash = SchemaUtils.hash(options.schema);
 
-  // Initialize connection if not exists
-  if (!globalState.pool) {
-    globalState.pool = new Pool({ connectionString: options.url });
-    globalState.db = drizzle(globalState.pool);
+  // Initialize connection
+  if (!globalState.db) {
+    globalState.db = options.db;
   }
 
   // Check if we need to recreate the database
@@ -327,7 +318,7 @@ export async function setupTestDb(options: SetupTestDbOptions): Promise<void> {
     !globalState.schemaHash || globalState.schemaHash !== newSchemaHash;
 
   if (needsRecreation) {
-    console.log("vitest-drizzle: Setting up test database");
+    console.log("vitest-drizzle-postgres: Setting up test database");
     await createFreshDb(options);
   } else {
     // Still need to refresh table names in case they weren't cached
@@ -349,15 +340,12 @@ export async function useTestDb(
   const globalState = GlobalState.getInstance();
   const testState = TestState.getInstance();
 
-  if (!globalState.pool) {
+  if (!globalState.db) {
     throw new DatabaseNotInitializedError();
   }
 
   testState.mode = mode;
-
-  // Get a dedicated client for this test
-  testState.client = await globalState.pool.connect();
-  testState.db = drizzle(testState.client);
+  testState.db = globalState.db;
 
   // Create the $db context object
   const dbContext: TestDbContext = {
@@ -384,11 +372,11 @@ export async function useTestDb(
 async function setupCurrentMode(): Promise<void> {
   const testState = TestState.getInstance();
 
-  if (!testState.client) return;
-
-  if (testState.mode === "savepoint") {
-    await testState.client.query("BEGIN");
-    await testState.client.query(`SAVEPOINT ${CONSTANTS.SAVEPOINT_NAME}`);
+  if (testState.mode === "savepoint" && testState.db) {
+    await testState.db.execute(sql.raw("BEGIN"));
+    await testState.db.execute(
+      sql.raw(`SAVEPOINT ${CONSTANTS.SAVEPOINT_NAME}`)
+    );
   }
   // For truncate mode, no setup needed
 }
@@ -400,33 +388,34 @@ async function cleanupCurrentMode(): Promise<void> {
   const globalState = GlobalState.getInstance();
   const testState = TestState.getInstance();
 
-  if (!testState.client) return;
-
-  if (testState.mode === "savepoint") {
+  if (testState.mode === "savepoint" && testState.db) {
     try {
-      await testState.client.query(
-        `ROLLBACK TO SAVEPOINT ${CONSTANTS.SAVEPOINT_NAME}`
+      await testState.db.execute(
+        sql.raw(`ROLLBACK TO SAVEPOINT ${CONSTANTS.SAVEPOINT_NAME}`)
       );
-      await testState.client.query("ROLLBACK");
+      await testState.db.execute(sql.raw("ROLLBACK"));
     } catch (error) {
       // Try a simple rollback if savepoint fails
       try {
-        await testState.client.query("ROLLBACK");
+        await testState.db.execute(sql.raw("ROLLBACK"));
       } catch (rollbackError) {
         console.warn(
-          "vitest-drizzle: Failed to rollback transaction:",
+          "vitest-drizzle-postgres: Failed to rollback transaction:",
           rollbackError
         );
       }
     }
-  } else if (testState.mode === "truncate") {
+  } else if (testState.mode === "truncate" && testState.db) {
     try {
-      await DatabaseUtils.truncateTables(
-        testState.client,
+      await DatabaseUtils.truncateTablesWithDb(
+        testState.db,
         globalState.tableNames
       );
     } catch (error) {
-      console.warn("vitest-drizzle: Failed to truncate tables:", error);
+      console.warn(
+        "vitest-drizzle-postgres: Failed to truncate tables:",
+        error
+      );
     }
   }
 }
@@ -438,12 +427,7 @@ export async function cleanupTestDb(): Promise<void> {
   const testState = TestState.getInstance();
 
   await cleanupCurrentMode();
-
-  // Release the test client back to the pool
-  if (testState.client) {
-    testState.client.release();
-    testState.reset();
-  }
+  testState.reset();
 }
 
 /**
@@ -453,17 +437,7 @@ export async function teardownTestDb(): Promise<void> {
   const globalState = GlobalState.getInstance();
   const testState = TestState.getInstance();
 
-  // Clean up any active test client
-  if (testState.client) {
-    try {
-      await testState.client.query("ROLLBACK");
-    } catch (error) {
-      // Ignore rollback errors during teardown
-    }
-    testState.client.release();
-    testState.reset();
-  }
-
+  testState.reset();
   await globalState.teardown();
 }
 

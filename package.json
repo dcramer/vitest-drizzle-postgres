@@ -24,7 +24,7 @@
     "lint:fix": "turbo lint:fix",
     "format": "turbo format",
     "version": "turbo version",
-    "publish": "turbo publish --filter=vitest-drizzle",
+    "publish": "turbo publish --filter=vitest-drizzle-postgres",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",

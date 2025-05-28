@@ -1,4 +1,4 @@
--- Initialize the test database for vitest-drizzle
+-- Initialize the test database for vitest-drizzle-postgres
 -- This script runs when the PostgreSQL container starts for the first time
 
 -- Create the test database

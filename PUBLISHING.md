@@ -1,130 +1,75 @@
 # Publishing Guide
 
-This project uses [Changesets](https://github.com/changesets/changesets) with Turborepo for version management and publishing.
+This project uses Changesets with Turborepo for version management and publishing.
 
-## Publishing Workflow
+## Quick Start
 
-### 1. Create a Changeset
+```bash
+# 1. Create changeset for your changes
+pnpm changeset
 
-When you make changes that should be published, create a changeset:
+# 2. Version packages
+pnpm changeset:version
+
+# 3. Publish
+pnpm changeset:publish
+```
+
+## Detailed Workflow
+
+### Create Changeset
 
 ```bash
 pnpm changeset
 ```
 
-This will:
-- Prompt you to select which packages changed
-- Ask for the type of change (patch, minor, major)
-- Request a summary of the changes
-- Generate a changeset file in `.changeset/`
+Select packages, change type (patch/minor/major), and add summary.
 
-### 2. Version Packages
-
-When ready to release, update package versions:
+### Version Packages
 
 ```bash
 pnpm changeset:version
 ```
 
-This will:
-- Consume all changeset files
-- Update package.json versions
-- Update CHANGELOG.md files
-- Remove the consumed changeset files
+Updates package.json versions and generates CHANGELOG.md files.
 
-### 3. Build and Test
-
-Ensure everything builds and tests pass:
-
-```bash
-pnpm test:all
-pnpm lint
-```
-
-### 4. Publish
-
-Publish the packages:
+### Publish
 
 ```bash
 pnpm changeset:publish
 ```
 
-This will:
-- Build all packages (via `prepublishOnly`)
-- Publish changed packages to npm
-- Create git tags for the releases
+Builds and publishes changed packages to npm.
 
-## Using Turbo Commands
+## Change Types
 
-You can also use the Turbo-coordinated commands:
-
-```bash
-# Run version across all packages
-pnpm version
-
-# Run publish across all packages  
-pnpm publish
-```
-
-## Package Configuration
-
-Each publishable package needs:
-
-1. **Version script** in `package.json`:
-   ```json
-   {
-     "scripts": {
-       "version": "echo 'Version updated'",
-       "publish": "npm publish"
-     }
-   }
-   ```
-
-2. **prepublishOnly script** to ensure build:
-   ```json
-   {
-     "scripts": {
-       "prepublishOnly": "pnpm build"
-     }
-   }
-   ```
-
-## Changeset Types
-
-- **patch**: Bug fixes, small changes (0.0.1 → 0.0.2)
-- **minor**: New features, backwards compatible (0.0.1 → 0.1.0)  
+- **patch**: Bug fixes (0.0.1 → 0.0.2)
+- **minor**: New features (0.0.1 → 0.1.0)
 - **major**: Breaking changes (0.0.1 → 1.0.0)
 
-## Example Workflow
+## Complete Example
 
 ```bash
-# 1. Make your changes
+# Make changes and create changeset
 git checkout -b feature/new-feature
-
-# 2. Create changeset
+# ... make changes ...
 pnpm changeset
-# Select packages, change type, add summary
 
-# 3. Commit changeset
+# Commit and merge
 git add .changeset/
 git commit -m "Add changeset for new feature"
-
-# 4. Merge to main
 git checkout main
 git merge feature/new-feature
 
-# 5. Version and publish
+# Version and publish
 pnpm changeset:version
 git add .
 git commit -m "Version packages"
-
 pnpm changeset:publish
 git push --follow-tags
 ```
 
-## CI/CD Integration
-
-For automated publishing, you can use GitHub Actions:
+## CI/CD Setup
 
 ```yaml
 name: Release
@@ -147,7 +92,7 @@ jobs:
       - run: pnpm test:all
       - run: pnpm lint
       
-      - name: Create Release Pull Request or Publish
+      - name: Publish
         uses: changesets/action@v1
         with:
           publish: pnpm changeset:publish

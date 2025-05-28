@@ -1,8 +1,10 @@
+/// <reference types="vitest/globals" />
+
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { afterEach, beforeEach } from "vitest";
-import { cleanupTestDb, setupTestDb, useTestDb } from "vitest-drizzle";
+import { cleanupTestDb, setupTestDb, useTestDb } from "vitest-drizzle-postgres";
 import * as schema from "./src/schema";
 
 // Ensure database exists before setupTestDb runs
@@ -41,13 +43,18 @@ async function ensureDatabaseExists() {
 // Ensure the database exists first
 await ensureDatabaseExists();
 
-// Setup test database for the library's own tests
-// This will handle schema creation via migrations
-await setupTestDb({
-  schema,
-  url:
+// Create database connection for tests
+const testPool = new Pool({
+  connectionString:
     process.env.TEST_DATABASE_URL ||
     "postgresql://postgres:postgres@localhost:5432/test_vitest_drizzle",
+});
+const testDb = drizzle(testPool);
+
+// Setup test database using our connection
+await setupTestDb({
+  schema,
+  db: testDb,
   migrationsFolder: "./migrations",
 });
 

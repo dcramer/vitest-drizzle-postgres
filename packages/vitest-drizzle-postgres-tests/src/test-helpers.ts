@@ -1,4 +1,4 @@
-/// <reference types="vitest-drizzle/types" />
+/// <reference types="vitest-drizzle-postgres/types" />
 
 import type { TestContext } from "vitest";
 import { testPosts, testUsers } from "./schema";

@@ -1,5 +1,5 @@
 {
-  "name": "vitest-drizzle",
+  "name": "vitest-drizzle-postgres",
   "version": "0.0.1",
   "description": "Fast database testing for Vitest with Drizzle ORM using savepoints and schema caching",
   "main": "dist/index.js",
@@ -17,13 +17,13 @@
         "default": "./dist/index.js"
       }
     },
-    "./types": {
-      "types": "./src/types.d.ts"
+    "./globals": {
+      "types": "./dist/globals.d.ts"
     }
   },
-  "files": ["dist", "src/types.d.ts"],
+  "files": ["dist"],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && cp src/globals.d.ts dist/globals.d.ts",
     "dev": "tsdown --watch",
     "clean": "rm -rf dist",
     "lint": "biome check .",

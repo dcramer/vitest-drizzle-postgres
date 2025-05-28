@@ -1,7 +1,7 @@
 {
-  "name": "vitest-drizzle-tests",
+  "name": "vitest-drizzle-postgres-tests",
   "version": "0.0.0",
-  "description": "Tests for vitest-drizzle package",
+  "description": "Tests for vitest-drizzle-postgres package",
   "private": true,
   "scripts": {
     "test": "vitest run",
@@ -15,6 +15,6 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "vitest-drizzle": "workspace:*"
+    "vitest-drizzle-postgres": "workspace:*"
   }
 }

@@ -45,7 +45,7 @@
       "cache": false
     },
     "publish": {
-      "dependsOn": ["version", "vitest-drizzle-tests#test"],
+      "dependsOn": ["version", "vitest-drizzle-postgres-tests#test"],
       "cache": false,
       "outputLogs": "new-only"
     }

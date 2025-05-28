@@ -1,11 +1,14 @@
 import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { describe, expect, test } from "vitest";
 import {
+  _resetGlobalState,
   cleanupTestDb,
   setupTestDb,
   teardownTestDb,
   useTestDb,
-} from "vitest-drizzle";
+} from "vitest-drizzle-postgres";
 import { testUsers } from "../src/schema";
 import * as schema from "../src/schema";
 
@@ -23,11 +26,16 @@ describe("Error Handling", () => {
     );
 
     // Restore the setup for other tests
-    await setupTestDb({
-      schema,
-      url:
+    const testPool = new Pool({
+      connectionString:
         process.env.TEST_DATABASE_URL ||
         "postgresql://postgres:postgres@localhost:5432/test_vitest_drizzle",
+    });
+    const testDb = drizzle(testPool);
+
+    await setupTestDb({
+      schema,
+      db: testDb,
       migrationsFolder: "./migrations",
     });
   });

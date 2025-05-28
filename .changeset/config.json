@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["vitest-drizzle-tests"]
+  "ignore": ["vitest-drizzle-postgres-tests"]
 }

@@ -45,7 +45,7 @@ importers:
         specifier: ^3.1.4
         version: 3.1.4(@types/node@22.15.23)(jiti@2.4.2)(yaml@2.8.0)
 
-  packages/vitest-drizzle:
+  packages/vitest-drizzle-postgres:
     dependencies:
       drizzle-orm:
         specifier: '>=0.30.0'
@@ -57,11 +57,11 @@ importers:
         specifier: '>=1.0.0'
         version: 3.1.4(@types/node@22.15.23)(jiti@2.4.2)(yaml@2.8.0)
 
-  packages/vitest-drizzle-tests:
+  packages/vitest-drizzle-postgres-tests:
     dependencies:
-      vitest-drizzle:
+      vitest-drizzle-postgres:
         specifier: workspace:*
-        version: link:../vitest-drizzle
+        version: link:../vitest-drizzle-postgres
 
 packages:
 
